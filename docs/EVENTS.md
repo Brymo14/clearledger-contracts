@@ -1,5 +1,8 @@
 # Event Catalog
 
+See [public reads and storage cost expectations](READ_METHODS.md) for RPC
+pagination guidance; event-driven indexing can avoid repeated full-history reads.
+
 This document lists every event emitted by the ClearLedger smart contracts. Events are published via `env.events().publish(topics, data)` and are indexed by the Go indexer for off-chain consumption.
 
 All amounts are in **USDC stroops** (1 USDC = 10,000,000 stroops).  
