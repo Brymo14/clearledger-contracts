@@ -1979,7 +1979,7 @@ impl PoolContract {
         env.storage()
             .instance()
             .set(&DataKey::MaxUtilizationBps, &new_cap_bps);
-        events::max_utilization_updated(&env, old_cap_bps, new_cap_bps);
+        events::max_utilization_updated(&env, &admin, old_cap_bps, new_cap_bps);
         Self::extend_instance_ttl(&env);
         true
     }
@@ -2038,7 +2038,7 @@ impl PoolContract {
         env.storage()
             .instance()
             .set(&DataKey::TreasuryAddress, &treasury);
-        events::protocol_fee_updated(&env, old_fee_bps, fee_bps, &treasury);
+        events::protocol_fee_updated(&env, &admin, old_fee_bps, fee_bps, &treasury);
         Self::extend_instance_ttl(&env);
         true
     }

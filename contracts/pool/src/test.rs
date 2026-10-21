@@ -1631,8 +1631,8 @@ fn test_set_max_utilization_emits_event() {
         Symbol::new(&te.env, "max_utilization_updated")
     );
     assert_eq!(
-        <(u32, u32)>::try_from_val(&te.env, &data).unwrap(),
-        (10000, 8500)
+        <(Address, u32, u32)>::try_from_val(&te.env, &data).unwrap(),
+        (te.admin.clone(), 10000, 8500)
     );
 
     // The storage update itself is still reflected in get_stats.
@@ -3133,14 +3133,15 @@ fn test_multi_deposit_average_basis_differs_from_fifo_yield() {
     let second_shares = te.pool.deposit(&te.lp, &first_deposit);
     assert_eq!(second_shares, 9_803_921_568);
 
-    // Withdrawing half of the original lot would return 5.1B stroops. FIFO
-    // assigns 5B stroops of principal and 100M of yield to that withdrawal.
-    let shares_withdrawn = first_deposit / 2;
-    let returned = te.pool.withdraw(&te.lp, &shares_withdrawn);
-    assert_eq!(returned, 5_100_000_000);
+    // Withdraw half of the first deposit's shares across two calls. The
+    // aggregate basis is reallocated pro rata after each partial withdrawal.
+    let shares_withdrawn = first_deposit / 4;
+    let first_return = te.pool.withdraw(&te.lp, &shares_withdrawn);
+    let second_return = te.pool.withdraw(&te.lp, &shares_withdrawn);
+    assert_eq!(first_return + second_return, 5_100_000_000);
 
-    // The aggregate-basis model instead allocates about 5.0495B principal,
-    // understating this withdrawal's FIFO yield by about 49.5M stroops.
+    // Aggregate basis allocates about 5.0495B principal across the calls,
+    // understating FIFO yield by about 49.5M stroops.
     let position = te.pool.get_lp_position(&te.lp);
     assert_eq!(position.yield_earned, 50_495_050);
     assert_eq!(100_000_000 - position.yield_earned, 49_504_950);
@@ -5772,8 +5773,8 @@ fn test_set_protocol_fee_emits_event_with_old_and_new_values() {
     );
     // setup() initialized the fee to 0 bps, so the first change reports 0 -> 750.
     assert_eq!(
-        <(u32, u32, Address)>::try_from_val(&te.env, &data).unwrap(),
-        (0u32, 750u32, treasury.clone())
+        <(Address, u32, u32, Address)>::try_from_val(&te.env, &data).unwrap(),
+        (te.admin.clone(), 0u32, 750u32, treasury.clone())
     );
 
     // A second change reports the value it replaced, not the original one.
@@ -5781,8 +5782,8 @@ fn test_set_protocol_fee_emits_event_with_old_and_new_values() {
     let events = te.env.events().all();
     let (_contract, _topics, data) = events.get(events.len() - 1).unwrap();
     assert_eq!(
-        <(u32, u32, Address)>::try_from_val(&te.env, &data).unwrap(),
-        (750u32, 1500u32, treasury.clone())
+        <(Address, u32, u32, Address)>::try_from_val(&te.env, &data).unwrap(),
+        (te.admin.clone(), 750u32, 1500u32, treasury.clone())
     );
 
     // A rejected change (above MAX_PROTOCOL_FEE_BPS) must not emit anything,

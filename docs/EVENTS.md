@@ -428,17 +428,34 @@ Emitted when the pool handles a defaulted invoice.
 
 Emitted when the admin changes the protocol fee and/or the treasury address. The
 old value is included so an indexer can report what changed rather than only
-what it changed to. A rejected call (fee above `MAX_PROTOCOL_FEE_BPS`) emits
-nothing.
+what it changed to. The authorizing admin is included in event data. A rejected
+call (fee above `MAX_PROTOCOL_FEE_BPS`) emits nothing. Existing topics are
+unchanged; indexers should decode the expanded data tuple.
 
 | Field | Type | Description |
 |-------|------|-------------|
 | **Topics** | | |
 | `topic[0]` | `Symbol` | `"protocol_fee_updated"` |
-| **Data** | `(u32, u32, Address)` | `(old_fee_bps, new_fee_bps, treasury)` |
+| **Data** | `(Address, u32, u32, Address)` | `(admin, old_fee_bps, new_fee_bps, treasury)` |
 
-**Emitted by:** `set_protocol_fee()` in `contracts/pool/src/lib.rs:1525`  
+**Emitted by:** `set_protocol_fee()` in `contracts/pool/src/lib.rs`
 **Source:** `contracts/pool/src/events.rs:72`
+
+---
+
+### `max_utilization_updated`
+
+Emitted when the admin changes the pool's maximum utilization. Existing topics
+are unchanged; the authorizing admin is included in the expanded data tuple.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| **Topics** | | |
+| `topic[0]` | `Symbol` | `"max_utilization_updated"` |
+| **Data** | `(Address, u32, u32)` | `(admin, old_cap_bps, new_cap_bps)` |
+
+**Emitted by:** `set_max_utilization()` in `contracts/pool/src/lib.rs`
+**Source:** `contracts/pool/src/events.rs`
 
 ---
 

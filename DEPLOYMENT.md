@@ -11,6 +11,7 @@ smart contracts on Stellar.
 | Rust | 1.85.0 | `rustup toolchain install 1.85.0` |
 | wasm32v1-none target | — | `rustup target add wasm32v1-none --toolchain 1.85.0` |
 | Stellar CLI | latest | See [Stellar CLI docs](https://github.com/stellar/stellar-cli) |
+| Python | 3 | Used by deployment metadata checks (`python3`) |
 | jq | latest | Required by `scripts/maintainer/update-readme-addresses.sh`, run automatically at the end of `deploy.sh`. See [jq docs](https://jqlang.github.io/jq/download/) |
 
 The repo ships `rust-toolchain.toml` pinning channel `1.85.0` and
@@ -321,6 +322,19 @@ check.
 You can also verify on [Stellar Expert Testnet](https://stellar.expert/explorer/testnet).
 To confirm the deployed bytecode matches your local build, compare hashes as
 described in the [WASM artifact contributor guide](docs/developer-guide/wasm-artifacts.md#compare-wasm-hashes).
+
+### Deployment Metadata Consistency
+
+`deploy.sh` validates the generated `deployments.json`, `.env.deployed`, and
+`.deployed-addresses` against each other and the README address table before it
+reports completion. CI also checks that the README markers and required address
+rows are present; locally generated files are compared whenever they exist.
+Run the same checks manually with:
+
+```bash
+python3 scripts/check_deployment_metadata.py
+python3 -m unittest scripts.test_deployment_metadata
+```
 
 ## Contract Address Lifecycle & Rotation Policy
 
