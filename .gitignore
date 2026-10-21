@@ -4,15 +4,12 @@ target/
 **/*.rs.bk
 
 # Environment files
-.env
-.env.local
 
 # Editor / IDE
 *.swp
 *.swo
 *~
 .idea/
-.vscode/
 
 # OS files
 .DS_Store
@@ -38,3 +35,5 @@ contracts/*/test_snapshots/
 
 # Personal local-agent runner state (not repo configuration)
 .gemini/
+config.bat
+node_modules
