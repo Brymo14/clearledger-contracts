@@ -170,9 +170,14 @@ fi
 CMD_ESCROW_USDC=("$STELLAR" contract invoke --id "$ESCROW_USDC_CONTRACT_ID" --source "$DEPLOYER_ACCOUNT" --network testnet -- get_locked --invoice_id 0000000000000000000000000000000000000000000000000000000000000000)
 verify_check "escrow_usdc_contract (get_locked)" "${CMD_ESCROW_USDC[@]}"
 
-# 6. XLM Escrow Contract - get_locked (confirm existence with dummy ID)
-CMD_ESCROW_XLM=("$STELLAR" contract invoke --id "$ESCROW_XLM_CONTRACT_ID" --source "$DEPLOYER_ACCOUNT" --network testnet -- get_locked --invoice_id 0000000000000000000000000000000000000000000000000000000000000000)
-verify_check "escrow_xlm_contract (get_locked)" "${CMD_ESCROW_XLM[@]}"
+# 6. XLM Escrow Contract - get_locked (only when the experimental XLM escrow is deployed)
+if [ -n "${ESCROW_XLM_CONTRACT_ID:-}" ]; then
+  CMD_ESCROW_XLM=("$STELLAR" contract invoke --id "$ESCROW_XLM_CONTRACT_ID" --source "$DEPLOYER_ACCOUNT" --network testnet -- get_locked --invoice_id 0000000000000000000000000000000000000000000000000000000000000000)
+  verify_check "escrow_xlm_contract (get_locked)" "${CMD_ESCROW_XLM[@]}"
+else
+  echo "Skipping escrow_xlm_contract (ESCROW_XLM_CONTRACT_ID is not set)."
+  echo ""
+fi
 
 # 7. Invoice Contract - get_escrow_contract (wired by deploy.sh; null if unset)
 CMD_INVOICE_ESCROW=("$STELLAR" contract invoke --id "$INVOICE_CONTRACT_ID" --source "$DEPLOYER_ACCOUNT" --network testnet -- get_escrow_contract)

@@ -21,6 +21,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   dashboards no longer have to replay `issuer_registered` / `buyer_registered`
   events from genesis. `limit` is capped at 50 (mirroring the batch cap) and a
   larger page panics with the new `RegistryError::PageSizeExceeded` (#8) (#841)
+- `registry`: `list_profiles_page(role, cursor, limit)` cursor-based view,
+  returning a `ProfilePage { items, next_cursor }`. The cursor resumes from an
+  absolute enumeration-index slot, so appending registrations between page
+  reads cannot shift, duplicate, or omit earlier entries. `limit` must be
+  `1..=50` (`InvalidPageSize` #9 for 0, `PageSizeExceeded` #8 above 50) and a
+  cursor past the current count is rejected with `InvalidCursor` #10. The
+  existing offset-based `list_profiles` view is unchanged (#12)
 - `registry`: per-role enumeration index, written by every registration path
   (`register_issuer`, `register_buyer`, `batch_register_issuers`,
   `batch_register_buyers`) as `DataKey::ProfileIndex(Role, u32)` plus
@@ -46,6 +53,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- `invoice`: `submit_attestation` now returns the typed
+  `InvoiceError::AgentRegistryNotConfigured` (#29) when the agent-registry
+  contract has not been wired, instead of the generic `NotFound` (#2);
+  `list_for_financing` returns the same error if an attestation exists but
+  the agent registry is unset
+- `registry`: the `profile_verified` event now includes the authorizing admin
+  as `topic[3]`, so indexers can attribute verification status changes. The
+  existing profile and role topics plus the `bool` status data are unchanged
+  (#8)
+- `invoice`: documented and pinned the early-repayment discount rounding rule
+  (#26). The pool's time-proportional discount is
+  `floor(discount * elapsed / term)`, rounded down to the stroop with checked
+  multiplication/division; the buyer receives the unearned remainder as a
+  refund, so its net repayment is `face_value - refund_to_buyer`.
 - `registry`: documented the deterministic duplicate semantics of
   `batch_register_issuers` / `batch_register_buyers` — already-registered
   addresses (including repeated addresses within one batch) are skipped and
